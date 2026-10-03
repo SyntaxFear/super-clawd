@@ -677,7 +677,8 @@ export class World implements PlayerHost {
     const f = this.flag;
     const p = this.player;
     if (!f || f.passed || this.phase !== 'play') return;
-    if (p.x + p.w >= f.poleX && p.y + p.h > f.topY) {
+    // Touching the pole, or walking into its base block, both count.
+    if (p.x + p.w >= f.poleX - 9 && p.y + p.h > f.topY) {
       const height = f.bottomY - (p.y + p.h);
       const pts = height > 120 ? 5000 : height > 90 ? 2000 : height > 60 ? 800 : height > 30 ? 400 : 100;
       this.addScore(pts, f.poleX + 14, Math.max(f.topY + 10, p.y));
@@ -686,6 +687,7 @@ export class World implements PlayerHost {
       p.vx = 0;
       p.vy = 0;
       p.x = f.poleX - p.w + 2;
+      if (p.y + p.h > f.bottomY) p.y = f.bottomY - p.h;
       p.facing = 1;
       p.pose = 'pole';
       p.star = 0;

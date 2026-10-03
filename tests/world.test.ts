@@ -143,6 +143,17 @@ describe('world interactions', () => {
     expect(bug.dying).toBe(true);
   });
 
+  it('reaching the flag finishes the level', () => {
+    const w = mk((b) => {
+      b.ground(0, 59);
+      b.start(3);
+      b.goal(14);
+    });
+    const evs = run(w, 60 * 20, { right: true });
+    expect(evs.some((e) => e.type === 'cleared')).toBe(true);
+    expect(w.flag?.passed).toBe(true);
+  });
+
   it('a permission gate pauses the world until answered', () => {
     const w = mk((b) => {
       b.ground(0, 59);
