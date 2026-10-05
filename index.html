@@ -3,10 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1f1b18" />
     <title>Super Clawd</title>
+    <meta name="description" content="A retro platformer starring the Claude Code mascot. Fix bugs, collect tokens, beat Copilot." />
   </head>
   <body>
-    <canvas id="screen" width="320" height="224"></canvas>
+    <div id="app">
+      <div id="stage">
+        <canvas id="screen" width="320" height="224" aria-label="Super Clawd game"></canvas>
+        <div id="ui"></div>
+      </div>
+    </div>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>
