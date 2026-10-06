@@ -5,7 +5,7 @@ import * as Hero from '../art/hero';
 import * as Props from '../art/props';
 import type { LevelData, MusicId, Warp } from './builder';
 import { Entity } from './entities/base';
-import { Bug, Loop } from './entities/enemies';
+import { Bug, Deprecated, Flaky, Leak, Loop, NullPtr } from './entities/enemies';
 import { Item, MiniAgent, TokenPop, type ItemKind } from './entities/items';
 import { Checkpoint, Flagpole, Gate, Hint, Platform, RateLimit } from './entities/props';
 import { Fx } from './fx';
@@ -126,6 +126,14 @@ export class World implements PlayerHost {
         return new Bug(x, y);
       case 'loop':
         return new Loop(x, y);
+      case 'flaky':
+        return new Flaky(x, y, seed);
+      case 'nullptr':
+        return new NullPtr(x, y);
+      case 'leak':
+        return new Leak(x, y, (o.stage as number) ?? 0);
+      case 'deprecated':
+        return new Deprecated(x, y, seed);
       case 'platform':
         return new Platform(x, y, o as never);
       case 'checkpoint':
@@ -655,7 +663,11 @@ export class World implements PlayerHost {
 
     // Walkers bump into each other and turn around.
     const walkers = this.entities.filter(
-      (e) => e.activated && !e.dead && !e.dying && (e instanceof Bug || (e instanceof Loop && e.mode === 'walk')),
+      (e) =>
+        e.activated &&
+        !e.dead &&
+        !e.dying &&
+        (e instanceof Bug || e instanceof Flaky || e instanceof Leak || (e instanceof Loop && e.mode === 'walk')),
     );
     for (let i = 0; i < walkers.length; i++) {
       for (let j = i + 1; j < walkers.length; j++) {
