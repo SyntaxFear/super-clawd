@@ -172,4 +172,69 @@ const L12: LevelDef = {
   },
 };
 
-export const WORLD1: LevelDef[] = [L11, L12];
+/** 1-3: The Cloud. Moving platforms, crumbling builds, flying warnings and a dangerous command. */
+const L13: LevelDef = {
+  id: '1-3',
+  name: 'The Cloud',
+  theme: 'cloud',
+  music: 'sky',
+  time: 300,
+  width: 186,
+  build(b) {
+    b.start(3);
+    b.ground(0, 11);
+    b.sign(1, 11, ['deploying to', 'the cloud…']);
+
+    b.block(15, 10, 6, 4);
+    b.tokens(16, 8, 4);
+    b.platform('move-h', 22, 9, 3, 7, 40, 0);
+    b.block(33, 11, 6, 3);
+    b.enemy('deprecated', 38, 7);
+    b.prompt(35, 7, 'power');
+
+    // Broken builds crumble under you.
+    b.platform('fall', 41, 9, 2);
+    b.platform('fall', 45, 8, 2);
+    b.platform('fall', 49, 9, 2);
+    b.tokens(45, 6, 2);
+
+    b.block(53, 10, 9, 4);
+    b.enemy('leak', 59, 9);
+    b.prompt(57, 6, 'token').prompt(58, 6, 'token');
+
+    b.platform('move-v', 64, 6, 3, 5, 32, 0);
+    b.platform('move-v', 69, 7, 3, 4, 32, 1.6);
+    b.enemy('deprecated', 72, 4);
+
+    b.block(74, 11, 14, 3);
+    b.checkpoint(75);
+    b.enemy('nullptr', 79, 10).enemy('nullptr', 83, 10);
+    b.tokens(78, 8, 7);
+
+    // Title bars across the sky.
+    b.oneway(91, 9, 3).oneway(96, 7, 3).oneway(101, 9, 3);
+    b.tokens(97, 5, 1).tokens(92, 7, 1).tokens(102, 7, 1);
+    b.enemy('deprecated', 99, 5).enemy('deprecated', 106, 8);
+
+    b.block(106, 10, 9, 4);
+    b.prompt(110, 6, 'ultrathink');
+    b.enemy('leak', 113, 9, { stage: 1 });
+
+    b.platform('move-h', 116, 8, 3, 8, 46, 0);
+    b.platform('fall', 129, 9, 2);
+
+    // A permission prompt you should NOT accept.
+    b.block(132, 11, 18, 3);
+    b.sign(133, 10, ['careful what', 'you approve…']);
+    b.gate(141, 'rm -rf ~/', false, 11);
+    b.enemy('nullptr', 146, 10);
+
+    b.platform('fall', 152, 9, 2);
+    b.platform('fall', 156, 8, 2);
+    b.enemy('deprecated', 158, 4);
+    b.ground(160, 185);
+    b.goal(170);
+  },
+};
+
+export const WORLD1: LevelDef[] = [L11, L12, L13];
