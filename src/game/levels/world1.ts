@@ -101,4 +101,75 @@ const L11: LevelDef = {
   },
 };
 
-export const WORLD1: LevelDef[] = [L11];
+/** 1-2: underground in node_modules. Flaky Tests, a rate limit, lifts. */
+const L12: LevelDef = {
+  id: '1-2',
+  name: 'node_modules',
+  theme: 'deps',
+  music: 'underground',
+  time: 300,
+  width: 184,
+  build(b) {
+    b.start(3);
+    b.ground(0, 41);
+    b.brick(6, 1, 156);
+    b.block(0, 0, 1, 12);
+    b.sign(2, 11, ['cd node_modules', 'good luck.']);
+
+    b.enemy('flaky', 14);
+    b.tokens(10, 9, 3);
+
+    b.brick(19, 8, 2).prompt(21, 8, 'power').brick(22, 8, 2);
+    b.tokens(19, 7, 5);
+    b.enemy('bug', 27).enemy('bug', 29);
+
+    // Dependency tree steps over a pit.
+    b.stairs(33, 4, 'up', 12, 4);
+    b.clear(37, 39, 12, 13);
+    b.stairs(40, 4, 'down', 12, 4);
+    b.ground(40, 74);
+    b.arc(36, 6, 5);
+
+    // Ledges patrolled by Infinite Loops.
+    b.brick(48, 8, 10);
+    b.enemy('loop', 51, 7);
+    b.brick(52, 5, 7).prompt(55, 5, 'token');
+    b.enemy('flaky', 56, 4);
+    b.enemy('bug', 54).enemy('bug', 60);
+
+    // 429: wait it out while bugs catch up from behind.
+    b.enemy('bug', 64, 11, { dir: 1 }).enemy('bug', 66, 11, { dir: 1 });
+    b.rateLimit(71, 5);
+    b.tokens(72, 8, 2);
+
+    b.ground(75, 103);
+    b.brick(80, 8, 3).brick(83, 8, 1, 'multi').brick(84, 8, 2);
+    b.hidden(88, 8, 'oneup');
+    b.enemy('flaky', 86).enemy('flaky', 92);
+    b.prompt(95, 8, 'token').prompt(96, 8, 'compact');
+
+    b.checkpoint(100);
+
+    // Lifts over the long pit.
+    b.platform('move-v', 106, 6, 3, 5, 36, 0);
+    b.platform('move-v', 112, 7, 3, 4, 36, 1.4);
+    b.tokens(107, 4, 2).tokens(113, 7, 2);
+    b.ground(117, 160);
+
+    // Low corridor: kick shells for big combos.
+    b.block(122, 2, 22, 5);
+    b.enemy('loop', 126).enemy('bug', 131).enemy('bug', 133).enemy('bug', 135).enemy('flaky', 139);
+    b.tokens(124, 8, 16);
+
+    b.brick(146, 8, 2).prompt(148, 8, 'token').brick(149, 8, 2);
+    b.enemy('bug', 152);
+
+    // Exit: up the stairs to the flag.
+    b.stairs(155, 4, 'up', 12, 4);
+    b.hard(159, 8, 2, 4);
+    b.ground(161, 183);
+    b.goal(168);
+  },
+};
+
+export const WORLD1: LevelDef[] = [L11, L12];
