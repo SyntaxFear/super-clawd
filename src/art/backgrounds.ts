@@ -205,6 +205,26 @@ function stars(g: CanvasRenderingContext2D, camX: number, viewW: number, t: numb
   }
 }
 
+function puff(w: number): Img {
+  return cached(`puff|${w}`, () =>
+    paint(w, Math.round(w * 0.45), (p) => {
+      const h = Math.round(w * 0.45);
+      const rng = new Rng(w);
+      const n = 3 + (w % 3);
+      for (let i = 0; i < n; i++) {
+        const cx = ((i + 0.5) / n) * w;
+        const r = Math.min(h * 0.55, w / (n * 0.9)) * (0.75 + rng.next() * 0.35);
+        p.disc(cx, h - r, r, '#e9dcf3');
+      }
+      p.rect(Math.round(w * 0.1), h - 3, Math.round(w * 0.8), 3, '#e9dcf3');
+      for (let i = 0; i < n; i++) {
+        const cx = ((i + 0.5) / n) * w;
+        p.rect(Math.round(cx - 2), h - 2, 5, 1, '#cbb6dd');
+      }
+    }),
+  );
+}
+
 function cloudMid(g: CanvasRenderingContext2D, camX: number, viewW: number, t: number): void {
   const span = 1300;
   const off = camX * 0.5 + t * 4;
@@ -212,9 +232,9 @@ function cloudMid(g: CanvasRenderingContext2D, camX: number, viewW: number, t: n
     const w = 40 + ((i * 29) % 40);
     const x = Math.round(((((i * 230 - off) % span) + span) % span) - 100);
     if (x > viewW || x + w < 0) continue;
-    const y = 40 + ((i * 41) % 80);
-    g.globalAlpha = 0.55;
-    g.drawImage(cloudPill(w, false), x, y);
+    const y = 30 + ((i * 41) % 80);
+    g.globalAlpha = 0.5;
+    g.drawImage(puff(w), x, y);
     g.globalAlpha = 1;
   }
 }

@@ -116,18 +116,26 @@ function groundTile(theme: Theme, top: boolean, left: boolean, right: boolean, v
       const pal = TILE_THEMES[theme].ground;
       p.rect(0, 0, 16, 16, pal.fill);
       codeLines(p, pal, v * 977 + 13, top ? 3 : 0, theme);
-      if (top) {
+      if (top && theme === 'cloud') {
+        p.g.clearRect(0, 0, 16, 6);
+        p.rect(0, 2, 16, 4, '#ffffff');
+        p.disc(4, 3.2, 3.3, '#ffffff');
+        p.disc(12, 3.2, 3.3, '#ffffff');
+        p.rect(0, 6, 16, 1, pal.top[2]);
+        p.px(2, 1, '#ffffff');
+        p.rect(0, 5, 16, 1, pal.top[1]);
+      } else if (top) {
         p.rect(0, 0, 16, 1, pal.top[0]);
         p.rect(0, 1, 16, 1, pal.top[1]);
         p.rect(0, 2, 16, 1, pal.top[2]);
       }
       if (left) p.rect(0, 0, 1, 16, pal.edge);
       if (right) p.rect(15, 0, 1, 16, pal.edge);
-      if (top && left) {
+      if (top && left && theme !== 'cloud') {
         p.g.clearRect(0, 0, 1, 1);
         p.px(1, 0, pal.top[1]);
       }
-      if (top && right) {
+      if (top && right && theme !== 'cloud') {
         p.g.clearRect(15, 0, 1, 1);
         p.px(14, 0, pal.top[1]);
       }
