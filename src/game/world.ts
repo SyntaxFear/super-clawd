@@ -5,7 +5,7 @@ import * as Hero from '../art/hero';
 import * as Props from '../art/props';
 import type { LevelData, MusicId, Warp } from './builder';
 import { Entity } from './entities/base';
-import { Bug, Deprecated, Flaky, Leak, Loop, NullPtr } from './entities/enemies';
+import { Bubble, Bug, Deprecated, Flaky, Leak, Loop, NullPtr, Spinner, Thwomp } from './entities/enemies';
 import { Item, MiniAgent, TokenPop, type ItemKind } from './entities/items';
 import { Checkpoint, Flagpole, Gate, Hint, Platform, RateLimit } from './entities/props';
 import { Fx } from './fx';
@@ -134,6 +134,12 @@ export class World implements PlayerHost {
         return new Leak(x, y, (o.stage as number) ?? 0);
       case 'deprecated':
         return new Deprecated(x, y, seed);
+      case 'thwomp':
+        return new Thwomp(x, y);
+      case 'bubble':
+        return new Bubble(x, y, seed);
+      case 'spinner':
+        return new Spinner(x, y, o.len as number, o.speed as number);
       case 'platform':
         return new Platform(x, y, o as never);
       case 'checkpoint':
@@ -234,6 +240,14 @@ export class World implements PlayerHost {
     e.knock(this, dir);
     this.session.bugsFixed += 1;
     this.addScore(points, e.cx, e.y);
+  }
+
+  slam(x: number, y: number): void {
+    this.shake(3, 0.3);
+    this.sfx('thud');
+    this.fx.dust(x - 10, y - 2, 4, '#9c8b6e');
+    this.fx.dust(x + 10, y - 2, 4, '#9c8b6e');
+    if (this.onScreen({ x: x - 16, w: 32 })) this.popup('847MB', x, y - 40, '#c49a6c', 0.9);
   }
 
   reachCheckpoint(c: Checkpoint): void {
@@ -580,7 +594,7 @@ export class World implements PlayerHost {
     const bottom = this.map.h * TILE + 80;
     for (const e of this.entities) {
       if (!e.activated || e.alwaysActive || e.isPlatform) continue;
-      if (e instanceof Flagpole || e instanceof Checkpoint || e instanceof Gate || e instanceof RateLimit) continue;
+      if (e instanceof Flagpole || e instanceof Checkpoint || e instanceof Gate || e instanceof RateLimit || e instanceof Spinner) continue;
       if (e.x + e.w < left && e.enemy) e.dead = true;
       if (e.y > bottom) e.dead = true;
     }

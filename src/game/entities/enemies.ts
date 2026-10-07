@@ -364,3 +364,164 @@ export class Deprecated extends Enemy {
     this.blit(g, Art.deprecated(Math.floor(this.animT * 8) % 2), this.x - 3 - camX, this.y - 1);
   }
 }
+
+/** node_modules: an enormous box that drops on you. Indestructible. */
+export class Thwomp extends Enemy {
+  name = 'node_modules (847 MB)';
+  stompable = false;
+  killable = false;
+  slowable = true;
+  state: 'wait' | 'shake' | 'fall' | 'land' | 'rise' = 'wait';
+  st = 0;
+  homeY: number;
+
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.w = 30;
+    this.h = 30;
+    this.x = x + 1;
+    this.y = y + 1;
+    this.homeY = this.y;
+  }
+
+  update(w: World, dt: number): void {
+    const p = w.player;
+    this.st += dt;
+    switch (this.state) {
+      case 'wait':
+        if (p.x + p.w > this.x - 22 && p.x < this.x + this.w + 22 && p.y > this.y && p.state === 'play') {
+          this.state = 'shake';
+          this.st = 0;
+        }
+        break;
+      case 'shake':
+        if (this.st > 0.22) ((this.state = 'fall'), (this.st = 0), (this.vy = 0));
+        break;
+      case 'fall': {
+        this.vy = Math.min(this.vy + 1800 * dt, 520);
+        this.vx = 0;
+        const r = moveBody(this, w.map, dt);
+        if (r.hitBottom) {
+          this.state = 'land';
+          this.st = 0;
+          w.slam(this.cx, this.y + this.h);
+        }
+        if (this.y > w.map.h * 16 + 40) this.dead = true;
+        break;
+      }
+      case 'land':
+        if (this.st > 0.9) ((this.state = 'rise'), (this.st = 0));
+        break;
+      case 'rise':
+        this.y -= 45 * dt;
+        if (this.y <= this.homeY) ((this.y = this.homeY), (this.state = 'wait'), (this.st = 0));
+        break;
+    }
+  }
+
+  draw(g: CanvasRenderingContext2D, camX: number): void {
+    const shake = this.state === 'shake' ? (Math.floor(this.st * 40) % 2 ? 1 : -1) : 0;
+    const angry = this.state === 'fall' || this.state === 'land' || this.state === 'shake';
+    g.drawImage(Art.thwomp(angry), Math.round(this.x - 1 - camX + shake), Math.round(this.y - 1));
+  }
+}
+
+/** A failing CI job that leaps out of the red pipeline. */
+export class Bubble extends Enemy {
+  name = 'a failing CI job';
+  stompable = false;
+  killable = false;
+  baseY: number;
+  wait: number;
+
+  constructor(x: number, y: number, seed: number) {
+    super(x, y);
+    this.w = 10;
+    this.h = 10;
+    this.x = x + 3;
+    this.baseY = y + 24;
+    this.y = this.baseY;
+    this.wait = (seed % 4) * 0.5;
+  }
+
+  update(_w: World, dt: number): void {
+    this.animT += dt;
+    if (this.wait > 0) {
+      this.wait -= dt;
+      this.y = this.baseY;
+      if (this.wait <= 0) this.vy = -440;
+      return;
+    }
+    this.vy += 760 * dt;
+    this.y += this.vy * dt;
+    if (this.y >= this.baseY && this.vy > 0) {
+      this.y = this.baseY;
+      this.wait = 1.6;
+    }
+  }
+
+  draw(g: CanvasRenderingContext2D, camX: number): void {
+    if (this.wait > 0) return;
+    const img = Art.bubble(Math.floor(this.animT * 8) % 2);
+    g.save();
+    g.translate(Math.round(this.x - 1 - camX), Math.round(this.y - 1) + (this.vy > 0 ? img.height : 0));
+    if (this.vy > 0) g.scale(1, -1);
+    g.drawImage(img, 0, 0);
+    g.restore();
+  }
+}
+
+/** Rotating bar of Claude Code spinner glyphs. Don't overthink it. */
+export class Spinner extends Enemy {
+  name = 'an overthinking spinner';
+  stompable = false;
+  killable = false;
+  harmful = true;
+  angle = 0;
+  len: number;
+  speed: number;
+  ox: number;
+  oy: number;
+
+  constructor(x: number, y: number, len: number, speed: number) {
+    super(x, y);
+    this.ox = x + 8;
+    this.oy = y + 8;
+    this.len = len;
+    this.speed = speed;
+    this.w = len * 16;
+    this.h = len * 16;
+    this.x = this.ox - this.w / 2;
+    this.y = this.oy - this.h / 2;
+  }
+
+  private segments(): [number, number][] {
+    const out: [number, number][] = [];
+    for (let i = 0; i < this.len; i++) {
+      const r = i * 8;
+      out.push([this.ox + Math.cos(this.angle) * r, this.oy + Math.sin(this.angle) * r]);
+    }
+    return out;
+  }
+
+  update(_w: World, dt: number): void {
+    this.angle += this.speed * dt;
+    this.animT += dt;
+  }
+
+  hitsPlayer(p: Player): boolean {
+    for (const [sx, sy] of this.segments()) {
+      const nx = Math.max(p.x, Math.min(sx, p.x + p.w));
+      const ny = Math.max(p.y, Math.min(sy, p.y + p.h));
+      if ((nx - sx) ** 2 + (ny - sy) ** 2 < 3.5 * 3.5) return true;
+    }
+    return false;
+  }
+
+  draw(g: CanvasRenderingContext2D, camX: number): void {
+    const frame = Math.floor(this.animT * 10) % 4;
+    for (const [sx, sy] of this.segments()) {
+      g.drawImage(Art.spinner(frame), Math.round(sx - 4 - camX), Math.round(sy - 4));
+    }
+  }
+}
