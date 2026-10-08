@@ -237,4 +237,54 @@ const L13: LevelDef = {
   },
 };
 
-export const WORLD1: LevelDef[] = [L11, L12, L13];
+/** 1-4: Copilot's Hangar. Red CI lava, node_modules crushers, spinner bars, then the boss. */
+const L14: LevelDef = {
+  id: '1-4',
+  name: "Copilot's Hangar",
+  theme: 'hangar',
+  music: 'castle',
+  time: 300,
+  width: 138,
+  build(b) {
+    b.start(2);
+    b.hard(0, 0, 138, 2);
+    b.block(0, 2, 1, 10);
+    b.ground(0, 13);
+    b.sign(4, 11, ['the hangar.', 'stay off the', 'red pipeline.']);
+
+    b.spinner(11, 7, 5, 1.7);
+    b.lava(14, 17);
+    b.enemy('bubble', 15);
+    b.ground(18, 34);
+    b.enemy('thwomp', 23, 2);
+    b.enemy('loop', 30);
+
+    b.lava(35, 46);
+    b.hard(37, 9, 3, 1).hard(43, 9, 3, 1);
+    b.spinner(41, 6, 4, -1.9);
+    b.enemy('bubble', 40);
+    b.ground(47, 72);
+    b.prompt(50, 8, 'power').prompt(51, 8, 'token');
+    b.enemy('bug', 55).enemy('flaky', 58);
+
+    b.checkpoint(61);
+    b.enemy('thwomp', 64, 2).enemy('thwomp', 69, 2);
+
+    b.lava(73, 82);
+    b.platform('move-h', 74, 8, 2, 5, 40, 0);
+    b.enemy('bubble', 77).enemy('bubble', 80);
+    b.ground(83, 109);
+    b.spinner(88, 9, 4, 2.1);
+    b.enemy('bug', 93).enemy('loop', 97);
+    b.prompt(100, 8, 'power').prompt(101, 8, 'compact');
+    b.sign(104, 11, ['copilot is', 'waiting…']);
+
+    // Boss arena.
+    b.ground(110, 133);
+    b.hard(134, 2, 4, 10);
+    b.oneway(115, 8, 3).oneway(126, 8, 3);
+    b.bossArena(110, 133, 113);
+  },
+};
+
+export const WORLD1: LevelDef[] = [L11, L12, L13, L14];
