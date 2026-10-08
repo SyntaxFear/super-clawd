@@ -84,7 +84,7 @@ export class Copilot extends Entity {
   dashes = 0;
   dir: 1 | -1 = -1;
   t = 0;
-  homeY = 34;
+  homeY = 54;
   targetX = 0;
   quip = '// TODO: defeat Clawd';
   quipT = 3;
@@ -289,7 +289,7 @@ export class Copilot extends Entity {
     if (this.quipT > 0) {
       const tw = measure(this.quip);
       const bx = Math.round(Math.max(this.x0 + 4 - camX, Math.min(this.x1 - 8 - tw - camX, this.cx - camX - tw / 2)));
-      const by = Math.max(4, Math.round(this.y - 18));
+      const by = Math.max(32, Math.round(this.y - 20));
       g.fillStyle = '#1f1b18';
       g.fillRect(bx - 3, by - 2, tw + 6, 11);
       g.fillStyle = '#d97757';
