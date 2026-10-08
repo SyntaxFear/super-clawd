@@ -95,4 +95,27 @@ export function drawHud(g: CanvasRenderingContext2D, w: World, viewW: number): v
   } else if (p.form === 'agent') {
     drawText(g, '⏵ subagents ready (B / shift)', 6, 212, '#f3ede4', { shadow: SHADOW, alpha: 0.75 });
   }
+
+  // Boss entrance banner.
+  const b = w.boss;
+  if (b && b.state === 'enter' && Math.floor(w.t * 4) % 4 !== 0) {
+    drawText(g, '⚠ BOSS ⚠', Math.round(viewW / 2), 70, '#e5484d', { align: 'center', shadow: SHADOW });
+    drawText(g, 'COPILOT', Math.round(viewW / 2), 84, '#c9b6ff', { align: 'center', scale: 2, shadow: SHADOW });
+    drawText(g, 'your autocomplete nemesis', Math.round(viewW / 2), 106, '#ede6dd', { align: 'center', shadow: SHADOW });
+  }
+
+  // Boss health.
+  if (b && w.bossStarted && !b.dead && b.state !== 'dying') {
+    const label = 'COPILOT';
+    const bw = b.maxHp * 9;
+    const total2 = measure(label) + 6 + bw;
+    const bx = Math.round((viewW - total2) / 2);
+    g.fillStyle = 'rgba(20, 17, 15, 0.7)';
+    g.fillRect(bx - 4, 17, total2 + 8, 12);
+    drawText(g, label, bx, 20, '#c9b6ff', { shadow: SHADOW });
+    for (let i = 0; i < b.maxHp; i++) {
+      g.fillStyle = i < b.hp ? (b.phase2 ? '#e5484d' : '#9b7bf0') : 'rgba(255,255,255,0.15)';
+      g.fillRect(bx + measure(label) + 6 + i * 9, 21, 8, 6);
+    }
+  }
 }

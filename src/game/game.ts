@@ -27,6 +27,12 @@ const QUIPS = [
   'Ship it anyway? No.',
 ];
 
+function fmtTime(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
 export interface GameDeps {
   g: CanvasRenderingContext2D;
   input: Input;
@@ -303,6 +309,9 @@ export class Game {
       case 'cleared':
         this.onCleared(w);
         break;
+      case 'bossDefeated':
+        this.onWorldClear(w);
+        break;
       default:
         break;
     }
@@ -423,6 +432,36 @@ export class Game {
     this.checkpoint = null;
     this.levelIndex = Math.min(this.levelIndex + 1, LEVELS.length - 1);
     this.startIntro();
+  }
+
+  private onWorldClear(w: World): void {
+    recordClear(this.save, w.level.id, this.levelIndex, this.session.score, w.level.time - w.time);
+    const ms = Math.round(this.session.playTime * 1000);
+    const prev = this.save.stats.worldBestMs;
+    const best = prev === null || ms < prev;
+    if (best) this.save.stats.worldBestMs = ms;
+    writeSave(this.save);
+    this.audio.music('world');
+    const time = fmtTime(this.session.playTime);
+    this.ui.open({
+      title: '✻ World 1 complete!',
+      tone: 'ok',
+      lines: [
+        { text: 'Copilot has stopped responding.', cls: 'ok' },
+        '',
+        `  time    ${time}${best ? '  (new best!)' : ''}`,
+        `  deaths  ${this.session.deaths}`,
+        `  bugs    ${this.session.bugsFixed} fixed`,
+        `  score   ${this.session.score}`,
+        '',
+        { text: 'Next: World 2 — The Repo (coming soon)', cls: 'dim' },
+      ],
+      items: [
+        { label: 'Play again', action: () => this.newGame(0) },
+        { label: 'Title', action: () => this.showTitle() },
+      ],
+      onBack: () => this.showTitle(),
+    });
   }
 
   pauseFromOutside(): void {

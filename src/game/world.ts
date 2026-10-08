@@ -5,6 +5,7 @@ import * as Hero from '../art/hero';
 import * as Props from '../art/props';
 import type { LevelData, MusicId, Warp } from './builder';
 import { Entity } from './entities/base';
+import { Copilot, GhostText } from './entities/boss';
 import { Bubble, Bug, Deprecated, Flaky, Leak, Loop, NullPtr, Spinner, Thwomp } from './entities/enemies';
 import { Item, MiniAgent, TokenPop, type ItemKind } from './entities/items';
 import { Checkpoint, Flagpole, Gate, Hint, Platform, RateLimit } from './entities/props';
@@ -32,18 +33,19 @@ export function newSession(): Session {
 export type WorldEvent =
   | { type: 'died'; cause: string; killer: string; progress: number }
   | { type: 'cleared'; timeBonus: number }
+  | { type: 'bossDefeated' }
   | { type: 'gate'; gate: Gate }
   | { type: 'oneup' }
   | { type: 'checkpoint'; x: number };
 
 export interface WorldHooks {
   sfx(name: string): void;
-  music(track: MusicId | 'bypass' | 'clear' | 'death' | null, opts?: { fast?: boolean }): void;
+  music(track: MusicId | 'bypass' | 'clear' | 'death' | 'boss' | null, opts?: { fast?: boolean }): void;
 }
 
 const CHAIN = [100, 200, 400, 500, 800, 1000, 2000, 4000, 5000, 8000];
 
-type Phase = 'play' | 'dead' | 'flag' | 'walkout' | 'tally' | 'done';
+type Phase = 'play' | 'dead' | 'flag' | 'walkout' | 'tally' | 'done' | 'boss-win';
 
 export class World implements PlayerHost {
   readonly level: LevelData;
@@ -73,6 +75,9 @@ export class World implements PlayerHost {
   events: WorldEvent[] = [];
   checkpointX: number | null = null;
   bumps = new Map<number, number>();
+  bossLock: { x0: number; x1: number } | null = null;
+  boss: Copilot | null = null;
+  bossStarted = false;
   lastKiller = '';
   flag: Flagpole | null = null;
   doorX = 0;
@@ -237,6 +242,10 @@ export class World implements PlayerHost {
 
   knockEnemy(e: Entity, dir: number, points: number): void {
     if (!e.killable || e.dying) return;
+    if (e instanceof GhostText) {
+      e.knock(this);
+      return;
+    }
     e.knock(this, dir);
     this.session.bugsFixed += 1;
     this.addScore(points, e.cx, e.y);
@@ -281,6 +290,21 @@ export class World implements PlayerHost {
     this.sfx('break');
     this.popup('rm -rf ~/', p.cx, p.y - 16, '#e5484d', 2);
     p.onGround = false;
+  }
+
+  bossDying(_b: Copilot): void {
+    this.hooks.music(null);
+    this.slowmo = 0;
+    for (const e of this.entities) if (e instanceof GhostText) e.knock(this);
+  }
+
+  bossDefeated(): void {
+    if (this.phase === 'boss-win') return;
+    this.phase = 'boss-win';
+    this.phaseT = 0;
+    this.timerOn = false;
+    this.player.state = 'victory';
+    this.hooks.music('clear');
   }
 
   // ---------------------------------------------------------------- blocks
@@ -533,6 +557,7 @@ export class World implements PlayerHost {
     if (p.state === 'play' && this.phase === 'play') this.interactions();
     this.flushSpawns();
 
+    this.checkBoss();
     this.starMusic();
     for (const [k, v] of this.bumps) {
       const nv = v + dt;
@@ -557,7 +582,7 @@ export class World implements PlayerHost {
     if (!this.hurried && this.time < 100 && before >= 100) {
       this.hurried = true;
       this.sfx('warning');
-      this.hooks.music(this.player.star > 0 ? 'bypass' : this.level.music, { fast: true });
+      this.hooks.music(this.player.star > 0 ? 'bypass' : this.bossStarted ? 'boss' : this.level.music, { fast: true });
     }
     if (this.time <= 0) this.killPlayer('time');
   }
@@ -565,7 +590,7 @@ export class World implements PlayerHost {
   private starMusic(): void {
     const s = this.player.star;
     if (this.prevStar > 0 && s <= 0 && this.phase === 'play') {
-      this.hooks.music(this.level.music, { fast: this.hurried });
+      this.hooks.music(this.bossStarted ? 'boss' : this.level.music, { fast: this.hurried });
     }
     this.prevStar = s;
   }
@@ -657,6 +682,11 @@ export class World implements PlayerHost {
       if (a instanceof MiniAgent) {
         for (const e of this.entities) {
           if (e === a || e.dead || e.dying || !e.enemy || !e.activated || !overlaps(a, e)) continue;
+          if (e instanceof Copilot) {
+            if (e.vulnerable) e.hit(this, 'agent');
+            a.vanish(this);
+            break;
+          }
           if (!e.killable) continue;
           this.knockEnemy(e, a.facing, 200);
           a.vanish(this);
@@ -725,7 +755,24 @@ export class World implements PlayerHost {
     }
   }
 
-  /** Drives the player during cutscenes: flagpole, walk to PROD, pipes. */
+  private checkBoss(): void {
+    const b = this.level.boss;
+    if (!b || this.bossStarted || this.phase !== 'play') return;
+    if (this.player.x > b.trigger) {
+      this.bossStarted = true;
+      this.bossLock = { x0: b.x0, x1: b.x1 };
+      // Seal the entrance behind the player.
+      const tx = Math.floor(b.x0 / TILE);
+      for (let ty = 0; ty < 12; ty++) this.map.set(tx, ty, T.HARD);
+      const floorY = this.groundBelow((b.x0 + b.x1) / 2, 4 * TILE) ?? 12 * TILE;
+      this.boss = new Copilot(b.x0, b.x1, floorY);
+      this.spawn(this.boss);
+      this.hooks.music('boss', { fast: this.hurried });
+      this.sfx('warning');
+    }
+  }
+
+  /** Drives the player during cutscenes: flagpole, walk to PROD, pipes, victory. */
   private scriptPlayer(dt: number): void {
     const p = this.player;
     p.stateT += dt;
@@ -787,6 +834,12 @@ export class World implements PlayerHost {
         }
         break;
       }
+      case 'victory':
+        p.pose = 'victory';
+        p.vx = 0;
+        p.vy = Math.min(p.vy + 1500 * dt, 400);
+        p.onGround = moveBody(p, this.map, dt).hitBottom;
+        break;
       default:
         break;
     }
@@ -837,6 +890,12 @@ export class World implements PlayerHost {
         }
         break;
       }
+      case 'boss-win':
+        if (this.phaseT > 3.5) {
+          this.phase = 'done';
+          this.events.push({ type: 'bossDefeated' });
+        }
+        break;
       default:
         break;
     }
@@ -857,7 +916,7 @@ export class World implements PlayerHost {
 
   updateCamera(snap: boolean): void {
     const p = this.player;
-    const area = this.areaFor(p.cx);
+    const area = this.bossLock ?? this.areaFor(p.cx);
     let min = area.x0;
     let max = area.x1 - this.viewW;
     if (max < min) min = max = (area.x0 + area.x1) / 2 - this.viewW / 2;
@@ -865,6 +924,13 @@ export class World implements PlayerHost {
     const lead = p.cx - this.camX;
     if (lead > this.viewW * 0.46) this.camX = p.cx - this.viewW * 0.46;
     else if (lead < this.viewW * 0.3) this.camX = p.cx - this.viewW * 0.3;
+    if (this.bossLock && !snap) {
+      // Pan smoothly into the arena.
+      const target = Math.max(min, Math.min(max, this.camX));
+      this.camX += (target - this.camX) * 0.08;
+      if (Math.abs(target - this.camX) < 0.5) this.camX = target;
+      return;
+    }
     this.camX = Math.max(min, Math.min(max, this.camX));
   }
 

@@ -195,3 +195,39 @@ describe('world interactions', () => {
     expect(w.checkpointX).not.toBeNull();
   });
 });
+
+describe('copilot boss', () => {
+  it('can be beaten by stomping it while it is stunned', async () => {
+    const { LEVELS } = await import('../src/game/levels');
+    const level = buildLevel(LEVELS[3]);
+    const w = new World(level, newSession(), { sfx() {}, music() {} }, { viewW: 320 });
+    const p = w.player;
+    p.x = level.boss!.trigger + 16;
+    p.prevX = p.x;
+    run(w, 30);
+    expect(w.bossStarted).toBe(true);
+    const states = new Set<string>();
+    let events: WorldEvent[] = [];
+    for (let i = 0; i < 60 * 120 && !events.some((e) => e.type === 'bossDefeated'); i++) {
+      const b = w.boss!;
+      states.add(b.state);
+      // Keep Clawd safe and cheat a stomp whenever the boss is grounded.
+      p.invuln = 1;
+      p.context = 0;
+      if (b.state === 'stunned' && b.hurtT <= 0 && p.vy <= 0 && p.onGround) {
+        p.x = b.cx - p.w / 2;
+        p.y = b.y - p.h - 10;
+        p.prevY = p.y;
+        p.vy = 60;
+        p.onGround = false;
+      }
+      w.update(DT, NO_CONTROLS);
+      events = events.concat(w.events.splice(0));
+    }
+    expect(states).toContain('hover');
+    expect(states).toContain('dash');
+    expect(states).toContain('stunned');
+    expect(w.boss!.hp).toBe(0);
+    expect(events.some((e) => e.type === 'bossDefeated')).toBe(true);
+  });
+});
