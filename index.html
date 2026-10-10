@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#1f1b18" />
     <title>Super Clawd</title>
     <meta name="description" content="A retro platformer starring the Claude Code mascot. Fix bugs, collect tokens, beat Copilot." />
@@ -12,6 +12,18 @@
       <div id="stage">
         <canvas id="screen" width="320" height="224" aria-label="Super Clawd game"></canvas>
         <div id="ui"></div>
+      </div>
+      <div id="touch" hidden>
+        <div class="pad pad-left">
+          <button class="tbtn tbtn-dir" data-act="left" aria-label="Left">◀</button>
+          <button class="tbtn tbtn-down" data-act="down" aria-label="Down">▼</button>
+          <button class="tbtn tbtn-dir" data-act="right" aria-label="Right">▶</button>
+        </div>
+        <div class="pad pad-right">
+          <button class="tbtn tbtn-b" data-act="run" aria-label="Run and subagents">B</button>
+          <button class="tbtn tbtn-a" data-act="jump" aria-label="Jump">A</button>
+        </div>
+        <button class="tbtn tbtn-pause" data-act="pause" aria-label="Pause">❚❚</button>
       </div>
     </div>
     <script type="module" src="./src/main.ts"></script>

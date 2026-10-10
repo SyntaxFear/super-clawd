@@ -244,3 +244,131 @@ body {
   opacity: 1;
   transform: translate(-50%, 0);
 }
+
+/* ---------------------------------------------------------------- touch controls */
+
+#touch {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 100%;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+}
+#touch[hidden] {
+  display: none;
+}
+
+.pad {
+  pointer-events: auto;
+  display: grid;
+  gap: 10px;
+}
+.pad-left {
+  grid-template-columns: auto auto;
+  grid-template-areas: 'l r' 'd d';
+}
+.pad-left [data-act='left'] {
+  grid-area: l;
+}
+.pad-left [data-act='right'] {
+  grid-area: r;
+}
+.pad-left [data-act='down'] {
+  grid-area: d;
+  justify-self: center;
+}
+.pad-right {
+  grid-template-columns: auto auto;
+  align-items: end;
+}
+.pad-right .tbtn-b {
+  margin-bottom: 26px;
+}
+
+.tbtn {
+  all: unset;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(27, 23, 21, 0.42);
+  border: 2px solid rgba(237, 230, 221, 0.32);
+  color: rgba(237, 230, 221, 0.9);
+  font: 700 22px var(--mono);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.tbtn.on {
+  background: rgba(217, 119, 87, 0.62);
+  border-color: var(--orange);
+}
+.tbtn-dir {
+  border-radius: 18px;
+  width: 74px;
+  height: 66px;
+}
+.tbtn-down {
+  width: 64px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+.tbtn-a {
+  width: 80px;
+  height: 80px;
+  background: rgba(217, 119, 87, 0.36);
+}
+.tbtn-pause {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: max(10px, env(safe-area-inset-right));
+  width: 44px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 14px;
+  pointer-events: auto;
+}
+
+body.menu-open #touch .pad,
+body.menu-open #touch .tbtn-pause {
+  visibility: hidden;
+}
+
+/* Portrait phones: the game sits on top, the controller below it. */
+body.portrait #app {
+  justify-content: flex-start;
+  padding-top: env(safe-area-inset-top);
+}
+body.portrait #touch {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: auto;
+  align-items: center;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+body.portrait .tbtn-pause {
+  top: 12px;
+  right: 50%;
+  transform: translateX(50%);
+}
+body.portrait .tbtn-dir {
+  width: 84px;
+  height: 76px;
+}
+body.portrait .tbtn-a {
+  width: 92px;
+  height: 92px;
+}
+body.portrait .tbtn-b {
+  width: 76px;
+  height: 76px;
+}
