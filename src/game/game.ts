@@ -6,6 +6,8 @@ import * as TileArt from '../art/tiles';
 import { drawText, measure } from '../engine/font';
 import type { Input } from '../engine/input';
 import { recordClear, writeSave, type SaveData } from '../save';
+import type { Recorder } from '../share/recorder';
+import { makeReplayGif, shareFile, shareText } from '../share/share';
 import type { UI } from '../ui/ui';
 import type { Gate } from './entities/props';
 import { drawHud } from './hud';
@@ -38,6 +40,7 @@ export interface GameDeps {
   input: Input;
   audio: AudioSys;
   ui: UI;
+  recorder: Recorder;
   save: SaveData;
   params: URLSearchParams;
 }
@@ -53,10 +56,13 @@ export class Game {
   checkpoint: { level: number; x: number } | null = null;
   paused = false;
   autoApprove = false;
+  private deathGif: Promise<Blob | null> | null = null;
+  private lastDeath: { cause: string; killer: string; progress: number; level: string } | null = null;
   private readonly g: CanvasRenderingContext2D;
   private readonly input: Input;
   private readonly audio: AudioSys;
   private readonly ui: UI;
+  private readonly recorder: Recorder;
   private readonly save: SaveData;
   private readonly params: URLSearchParams;
   private titleMusicPlayed = false;
@@ -71,6 +77,7 @@ export class Game {
     this.input = d.input;
     this.audio = d.audio;
     this.ui = d.ui;
+    this.recorder = d.recorder;
     this.save = d.save;
     this.params = d.params;
     this.viewW = viewW;
@@ -231,6 +238,8 @@ export class Game {
     this.scene = 'play';
     this.sceneT = 0;
     this.paused = false;
+    this.deathGif = null;
+    this.recorder.reset();
     this.audio.music(level.music);
     this.input.flush();
     this.ui.close();
@@ -363,6 +372,7 @@ export class Game {
   }
 
   private onDeath(ev: Extract<WorldEvent, { type: 'died' }>, w: World): void {
+    this.recorder.freeze();
     this.session.lives -= 1;
     this.session.deaths += 1;
     this.session.form = 'small';
@@ -371,8 +381,11 @@ export class Game {
     this.save.stats.bugsFixed = Math.max(this.save.stats.bugsFixed, 0);
     writeSave(this.save);
     const level = w.level;
+    this.lastDeath = { cause: ev.cause, killer: ev.killer, progress: ev.progress, level: level.id };
     if (ev.cause === 'rmrf') this.autoApprove = false;
     const line = this.deathLine(ev.cause, ev.killer);
+    const caption = `✗ ${line} · ${level.id}`;
+    this.deathGif = makeReplayGif(this.recorder, caption.length > 60 ? `✗ ${line}`.slice(0, 60) : caption).catch(() => null);
     const pct = Math.round(ev.progress * 100);
     const quip = QUIPS[(this.session.deaths * 7 + Math.floor(this.t)) % QUIPS.length];
     if (this.session.lives <= 0) {
@@ -396,6 +409,7 @@ export class Game {
               this.startIntro();
             },
           },
+          { label: 'Share replay (GIF)', action: () => void this.shareReplay() },
           { label: 'Quit to title', action: () => this.showTitle() },
         ],
         onBack: () => this.showTitle(),
@@ -414,10 +428,34 @@ export class Game {
       ],
       items: [
         { label: 'Retry', hint: this.checkpoint?.level === this.levelIndex ? 'from git commit' : 'enter', action: () => this.startIntro() },
+        { label: 'Share replay (GIF)', action: () => void this.shareReplay() },
         { label: 'Quit to title', action: () => this.showTitle() },
       ],
       onBack: () => this.startIntro(),
     });
+  }
+
+  private async shareReplay(): Promise<void> {
+    if (!this.deathGif || !this.lastDeath) return;
+    this.ui.toast('✻ Rendering replay…', 8000);
+    const blob = await this.deathGif;
+    if (!blob) {
+      this.ui.toast('Replay unavailable');
+      return;
+    }
+    const d = this.lastDeath;
+    const line = this.deathLine(d.cause, d.killer);
+    const text = `💀 Super Clawd ${d.level}: ${line} at ${Math.round(d.progress * 100)}%. Can you do better? ${location.origin}${location.pathname}`;
+    const r = await shareFile(blob, `super-clawd-${d.level}.gif`, text);
+    this.ui.toast(
+      r === 'shared'
+        ? 'Shared ✓'
+        : r === 'downloaded'
+          ? 'GIF saved · caption copied ✓'
+          : r === 'cancelled'
+            ? 'Share cancelled'
+            : 'Could not share',
+    );
   }
 
   private onCleared(w: World): void {
@@ -443,6 +481,7 @@ export class Game {
     writeSave(this.save);
     this.audio.music('world');
     const time = fmtTime(this.session.playTime);
+    const text = `✻ I beat Copilot in Super Clawd! ⏱ ${time} · 💀 ${this.session.deaths} deaths · 🐛 ${this.session.bugsFixed} bugs fixed · score ${this.session.score}. Can you beat me? ${location.origin}${location.pathname}`;
     this.ui.open({
       title: '✻ World 1 complete!',
       tone: 'ok',
@@ -457,6 +496,13 @@ export class Game {
         { text: 'Next: World 2 — The Repo (coming soon)', cls: 'dim' },
       ],
       items: [
+        {
+          label: 'Share result',
+          action: async () => {
+            const r = await shareText(text);
+            this.ui.toast(r === 'shared' ? 'Shared ✓' : r === 'copied' ? 'Copied to clipboard ✓' : 'Could not share');
+          },
+        },
         { label: 'Play again', action: () => this.newGame(0) },
         { label: 'Title', action: () => this.showTitle() },
       ],
@@ -526,6 +572,7 @@ export class Game {
     else if (this.world) {
       this.world.draw(g);
       drawHud(g, this.world, W);
+      if (!this.ui.isOpen && !this.paused) this.recorder.capture(g);
     }
     if (this.params.has('debug') && this.world) {
       const p = this.world.player;

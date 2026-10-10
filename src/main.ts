@@ -3,6 +3,7 @@ import { AudioSys } from './audio/audio';
 import { Input } from './engine/input';
 import { Game } from './game/game';
 import { loadSave } from './save';
+import { Recorder } from './share/recorder';
 import { UI } from './ui/ui';
 
 const VIEW_H = 224;
@@ -12,13 +13,14 @@ const params = new URLSearchParams(location.search);
 const canvas = document.getElementById('screen') as HTMLCanvasElement;
 const stage = document.getElementById('stage') as HTMLElement;
 const uiRoot = document.getElementById('ui') as HTMLElement;
-const g = canvas.getContext('2d', { alpha: false })!;
+const g = canvas.getContext('2d', { willReadFrequently: true, alpha: false })!;
 
 const save = loadSave();
 const audio = new AudioSys({ disabled: params.has('mute') && params.get('mute') !== '0', muted: save.muted });
 const input = new Input(window);
 const ui = new UI(uiRoot, (n) => audio.sfx(n));
-const game = new Game({ g, input, audio, ui, save, params }, 320);
+const recorder = new Recorder();
+const game = new Game({ g, input, audio, ui, recorder, save, params }, 320);
 
 let unlocked = false;
 function unlock(): void {
