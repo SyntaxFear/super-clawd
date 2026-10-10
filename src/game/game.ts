@@ -572,7 +572,10 @@ export class Game {
     else if (this.world) {
       this.world.draw(g);
       drawHud(g, this.world, W);
-      if (!this.ui.isOpen && !this.paused) this.recorder.capture(g);
+      // Keep recording through the first second of a death so the replay ends on the moment it happened.
+      const w = this.world;
+      const recording = w.phase !== 'dead' || w.phaseT < 1.1;
+      if (!this.ui.isOpen && !this.paused && recording) this.recorder.capture(g);
     }
     if (this.params.has('debug') && this.world) {
       const p = this.world.player;

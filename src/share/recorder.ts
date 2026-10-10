@@ -12,7 +12,7 @@ export class Recorder {
   frozen = false;
 
   constructor(
-    readonly maxFrames = 48,
+    readonly maxFrames = 42,
     readonly every = 4,
   ) {}
 
