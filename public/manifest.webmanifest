@@ -1,0 +1,15 @@
+{
+  "name": "Super Clawd",
+  "short_name": "Super Clawd",
+  "description": "A retro platformer starring the Claude Code mascot. Fix bugs, collect tokens, beat Copilot.",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0f0d0c",
+  "theme_color": "#1f1b18",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
