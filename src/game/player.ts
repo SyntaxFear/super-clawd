@@ -240,7 +240,7 @@ export class Player {
     }
     if (this.crouch && this.onGround) dir = 0;
 
-    const max = c.run || this.autoRun ? P.RUN : P.WALK;
+    const max = c.run ? P.RUN : this.autoRun ? (P.WALK + P.RUN) / 2 : P.WALK;
     this.skidding = false;
     if (dir !== 0) {
       this.facing = dir > 0 ? 1 : -1;
