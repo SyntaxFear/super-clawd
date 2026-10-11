@@ -294,3 +294,19 @@ describe('subagents', () => {
     expect(w.agentCount).toBe(2);
   });
 });
+
+describe('camera', () => {
+  it('locks onto the boss arena', async () => {
+    const { LEVELS } = await import('../src/game/levels');
+    const level = buildLevel(LEVELS[3]);
+    const w = new World(level, newSession(), { sfx() {}, music() {} }, { viewW: 426 });
+    const p = w.player;
+    p.x = level.boss!.trigger + 200;
+    p.prevX = p.x;
+    w.updateCamera(true);
+    run(w, 180);
+    const { x0, x1 } = level.boss!;
+    const center = (x0 + x1) / 2 - 426 / 2;
+    expect(Math.abs(w.camX - center)).toBeLessThan(1);
+  });
+});

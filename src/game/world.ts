@@ -920,18 +920,18 @@ export class World implements PlayerHost {
     let min = area.x0;
     let max = area.x1 - this.viewW;
     if (max < min) min = max = (area.x0 + area.x1) / 2 - this.viewW / 2;
-    if (snap) this.camX = p.cx - this.viewW * 0.4;
-    const lead = p.cx - this.camX;
-    if (lead > this.viewW * 0.46) this.camX = p.cx - this.viewW * 0.46;
-    else if (lead < this.viewW * 0.3) this.camX = p.cx - this.viewW * 0.3;
+    let desired = snap ? p.cx - this.viewW * 0.4 : this.camX;
+    const lead = p.cx - desired;
+    if (lead > this.viewW * 0.46) desired = p.cx - this.viewW * 0.46;
+    else if (lead < this.viewW * 0.3) desired = p.cx - this.viewW * 0.3;
+    desired = Math.max(min, Math.min(max, desired));
     if (this.bossLock && !snap) {
-      // Pan smoothly into the arena.
-      const target = Math.max(min, Math.min(max, this.camX));
-      this.camX += (target - this.camX) * 0.08;
-      if (Math.abs(target - this.camX) < 0.5) this.camX = target;
+      // Pan smoothly into the arena, then stay inside it.
+      this.camX += (desired - this.camX) * 0.08;
+      if (Math.abs(desired - this.camX) < 0.5) this.camX = desired;
       return;
     }
-    this.camX = Math.max(min, Math.min(max, this.camX));
+    this.camX = desired;
   }
 
   setViewW(w: number): void {
