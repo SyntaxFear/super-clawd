@@ -125,7 +125,14 @@ export class AudioSys {
       this.ctx = ctx;
       this.master = ctx.createGain();
       this.master.gain.value = this.muted ? 0 : 0.55;
-      this.master.connect(ctx.destination);
+      // Gentle limiter so stacked sounds never clip.
+      const limiter = ctx.createDynamicsCompressor();
+      limiter.threshold.value = -10;
+      limiter.knee.value = 6;
+      limiter.ratio.value = 12;
+      limiter.attack.value = 0.003;
+      limiter.release.value = 0.15;
+      this.master.connect(limiter).connect(ctx.destination);
       this.sfxBus = ctx.createGain();
       this.sfxBus.gain.value = 0.9;
       this.sfxBus.connect(this.master);
