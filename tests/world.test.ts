@@ -231,3 +231,38 @@ describe('copilot boss', () => {
     expect(events.some((e) => e.type === 'bossDefeated')).toBe(true);
   });
 });
+
+describe('warps', () => {
+  it('the 1-1 pipe leads into ~/.cache and back out without touching the flag', async () => {
+    const { LEVELS } = await import('../src/game/levels');
+    const level = buildLevel(LEVELS[0]);
+    const w = new World(level, newSession(), { sfx() {}, music() {} }, { viewW: 320 });
+    const p = w.player;
+    const warp = level.warps[0];
+    p.x = warp.tx * TILE + 10;
+    p.y = warp.ty * TILE - p.h;
+    p.prevX = p.x;
+    p.prevY = p.y;
+    run(w, 3);
+    run(w, 2, { down: true });
+    expect(p.state).toBe('pipe-in');
+    run(w, 90);
+    expect(p.state).toBe('play');
+    expect(w.phase).toBe('play');
+    expect(p.x).toBeGreaterThan(210 * TILE);
+    run(w, 60);
+    expect(w.phase).toBe('play');
+    // Exit pipe in the room.
+    const out = level.warps[1];
+    p.x = out.tx * TILE + 10;
+    p.y = out.ty * TILE - p.h;
+    p.prevY = p.y;
+    run(w, 3);
+    run(w, 2, { down: true });
+    run(w, 120);
+    expect(p.state).toBe('play');
+    const exit = level.exits[out.to];
+    expect(Math.abs(p.cx - (exit.tx + 1) * TILE)).toBeLessThan(10);
+    expect(p.y + p.h).toBeLessThanOrEqual(exit.ty * TILE + 0.5);
+  });
+});
