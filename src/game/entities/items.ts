@@ -134,7 +134,8 @@ export class MiniAgent extends Entity {
     this.vx = this.facing * 215;
     this.vy = Math.min(this.vy + 1150 * dt, 400);
     const r = moveBody(this, w.map, dt);
-    if (r.hitBottom) this.vy = -200;
+    // Low bounce so it never skips over short enemies.
+    if (r.hitBottom) this.vy = -150;
     if (r.hitLeft || r.hitRight || this.life <= 0 || !w.onScreen(this, 24)) this.vanish(w);
   }
 

@@ -266,3 +266,31 @@ describe('warps', () => {
     expect(p.y + p.h).toBeLessThanOrEqual(exit.ty * TILE + 0.5);
   });
 });
+
+describe('subagents', () => {
+  it('a thrown subagent takes out a bug down the hall', () => {
+    const w = mk((b) => {
+      b.ground(0, 59);
+      b.start(3);
+      b.enemy('bug', 12);
+    });
+    w.player.setForm('agent', w.map);
+    const bug = w.entities.find((e) => e instanceof Bug)!;
+    run(w, 5);
+    run(w, 1, { run: true, runPressed: true });
+    run(w, 120);
+    expect(bug.dying).toBe(true);
+    expect(w.session.bugsFixed).toBe(1);
+  });
+
+  it('only two subagents can be out at once', () => {
+    const w = mk((b) => {
+      b.ground(0, 59);
+      b.start(3);
+    });
+    w.player.setForm('agent', w.map);
+    run(w, 5);
+    for (let i = 0; i < 5; i++) run(w, 1, { run: true, runPressed: true });
+    expect(w.agentCount).toBe(2);
+  });
+});
