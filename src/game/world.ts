@@ -812,6 +812,8 @@ export class World implements PlayerHost {
         if (p.cx >= this.doorX && this.phase === 'walkout') {
           p.visible = false;
           p.state = 'gone';
+          this.popup('DEPLOYED ✓', this.doorX, p.y - 66, '#8fcb79', 2.4);
+          this.fx.sparkle(this.doorX, p.y, 14, '#8fcb79');
           this.phase = 'tally';
           this.phaseT = 0;
           this.tallyLeft = Math.ceil(this.time);

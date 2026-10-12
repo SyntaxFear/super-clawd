@@ -121,7 +121,7 @@ export class Fx {
       const color = p.rainbow ? rainbow(time * 1.5) : p.color;
       drawText(g, p.text, Math.round(p.x - camX), Math.round(p.y - rise), color, {
         align: 'center',
-        shadow: '#1a1614',
+        outline: '#1a1614',
         alpha: p.t > p.life - 0.2 ? (p.life - p.t) / 0.2 : 1,
       });
     }
