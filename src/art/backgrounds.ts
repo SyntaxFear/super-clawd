@@ -288,12 +288,13 @@ function hangarMid(g: CanvasRenderingContext2D, camX: number, viewW: number, t: 
 
 // ---------------------------------------------------------------- entry
 
-export function drawBackground(g: CanvasRenderingContext2D, theme: Theme, camX: number, viewW: number, t: number): void {
+export function drawBackground(g: CanvasRenderingContext2D, theme: Theme, camX: number, viewW: number, t: number, mid = true): void {
   g.drawImage(gradient(theme), 0, 0, viewW, H);
   const far = theme === 'terminal' ? terminalFar() : theme === 'deps' ? depsFar() : theme === 'cloud' ? cloudFar() : hangarFar();
   if (theme === 'cloud') stars(g, camX, viewW, t);
   const fx = -Math.round((camX * 0.2) % 512);
   for (let x = fx - 512; x < viewW; x += 512) if (x + 512 > 0) g.drawImage(far, x, 0);
+  if (!mid) return;
   if (theme === 'terminal') thinkingClouds(g, camX, viewW, t, false);
   else if (theme === 'deps') depsMid(g, camX, viewW, t);
   else if (theme === 'cloud') cloudMid(g, camX, viewW, t);
@@ -302,5 +303,5 @@ export function drawBackground(g: CanvasRenderingContext2D, theme: Theme, camX: 
 
 /** Title-screen backdrop: the 1-1 sky with drifting thinking clouds. */
 export function drawTitleBackground(g: CanvasRenderingContext2D, viewW: number, t: number): void {
-  drawBackground(g, 'terminal', t * 20, viewW, t);
+  drawBackground(g, 'terminal', t * 20, viewW, t, false);
 }
