@@ -200,7 +200,7 @@ export class Gate extends Entity {
     if (!accepted) {
       // Said no to a safe command: nothing happens, ask again later.
       this.state = 'closed';
-      this.cooldown = 1.5;
+      this.cooldown = 3;
       w.popup('DENIED', this.x - 8, this.y + 40, '#e5736e', 1.2);
       return;
     }
