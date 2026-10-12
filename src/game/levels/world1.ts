@@ -155,7 +155,7 @@ const L12: LevelDef = {
     // Lifts over the long pit.
     b.platform('move-v', 106, 6, 3, 5, 36, 0);
     b.platform('move-v', 112, 7, 3, 4, 36, 1.4);
-    b.tokens(107, 4, 2).tokens(113, 7, 2);
+    b.tokens(107, 4, 2).tokens(113, 5, 2);
     b.ground(117, 160);
 
     // Low corridor: kick shells for big combos.
