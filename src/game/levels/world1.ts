@@ -10,20 +10,20 @@ const L11: LevelDef = {
   width: 232,
   build(b) {
     b.area(0, 205).area(210, 231);
-    b.start(4);
+    b.start(8);
     b.ground(0, 53);
-    b.sign(1, 11, ['hello, world!', '← → move', '↑ / A jump']);
-    b.deco('duck', 9, 11);
+    b.sign(1, 11, ['hello, world!', '← → move', '↑ / A jump', 'shift / B run']);
+    b.deco('duck', 12, 11);
 
     // A first taste of tokens and a prompt block.
-    b.arc(9, 9, 4);
-    b.prompt(15, 8, 'token');
+    b.arc(11, 9, 4);
+    b.prompt(17, 8, 'token');
 
     // First block cluster with the Opus upgrade, then the first Bug.
-    b.brick(19, 8).prompt(20, 8, 'power').prompt(21, 8, 'token').brick(22, 8);
-    b.brick(20, 4, 2);
-    b.enemy('bug', 26);
-    b.deco('keys', 24, 11, { text: ['Y', 'N'] });
+    b.brick(21, 8).prompt(22, 8, 'power').prompt(23, 8, 'token').brick(24, 8);
+    b.brick(22, 4, 2);
+    b.enemy('bug', 28);
+    b.deco('keys', 25, 11, { text: ['Y', 'N'] });
 
     // Indentation terraces.
     b.block(29, 11, 8, 1).block(31, 10, 4, 1).block(32, 9, 2, 1);
@@ -45,7 +45,8 @@ const L11: LevelDef = {
     b.enemy('bug', 67).enemy('bug', 69);
 
     b.checkpoint(73);
-    b.deco('duck', 75, 11);
+    b.deco('duck', 70, 11);
+    b.sign(75, 11, ['tip: stomp a loop,', 'then kick it!']);
 
     // Infinite Loop lesson: curl it up, kick it into the Bug parade.
     b.enemy('loop', 80);
@@ -60,6 +61,7 @@ const L11: LevelDef = {
     b.ground(105, 112);
     b.arc(101, 8, 5);
     b.pipe(108, 3, { warp: 'cache' });
+    b.spawn('hint', 106, 6, { text: '↓ cd ~/.cache' });
     b.ground(115, 179);
     b.arc(112, 9, 4);
 
@@ -94,9 +96,9 @@ const L11: LevelDef = {
     b.ground(212, 229);
     b.brick(214, 1, 16);
     b.dropExit('cache', 212, 0);
-    for (let row = 5; row <= 9; row += 2) b.tokens(215, row, 9);
-    b.oneway(215, 10, 9);
-    b.sign(213, 11, ['~/.cache']);
+    for (let row = 5; row <= 9; row += 2) b.tokens(216, row, 8);
+    b.oneway(216, 10, 8);
+    b.sign(212, 11, ['~/.cache']);
     b.pipe(226, 2, { warp: 'cache-out' });
   },
 };
