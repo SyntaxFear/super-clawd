@@ -66,7 +66,9 @@ function layout(): void {
     if (W / scale < 256) scale = W / 256;
   }
   // One game pixel = a whole number of device pixels, so the art stays crisp.
-  const css = Math.max(1, Math.floor(scale * dpr)) / dpr;
+  // On low-density small screens that would shrink the game too much, so allow fractional scaling there.
+  const dev = Math.floor(scale * dpr);
+  const css = dev >= 2 ? dev / dpr : Math.max(scale, 1 / dpr);
   viewW = portrait ? 288 : Math.max(256, Math.min(448, Math.floor(W / css)));
   if (canvas.width !== viewW) canvas.width = viewW;
   if (canvas.height !== VIEW_H) canvas.height = VIEW_H;
