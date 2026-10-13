@@ -105,13 +105,19 @@ function frame(now: number): void {
   if (Math.abs(d - STEP) < 0.002) d = STEP;
   acc += d;
   let n = 0;
-  while (acc >= STEP && n < 5) {
-    game.update(STEP);
-    acc -= STEP;
-    n++;
+  try {
+    while (acc >= STEP && n < 5) {
+      game.update(STEP);
+      acc -= STEP;
+      n++;
+    }
+    game.render();
+  } catch (err) {
+    // Never let one bad frame freeze the game.
+    console.error(err);
+    acc = 0;
   }
   if (n >= 5) acc = 0;
-  game.render();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
