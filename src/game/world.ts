@@ -90,6 +90,8 @@ export class World implements PlayerHost {
   readonly dark: boolean;
   /** Subagents thrown in this level. */
   agentCount = 0;
+  /** Draw words (signs, popups, quips) as pixel text. The terminal edition overlays real text instead. */
+  pixelText = true;
 
   constructor(level: LevelData, session: Session, hooks: WorldHooks, opts: { viewW: number; checkpointX?: number | null }) {
     this.level = level;
@@ -953,7 +955,7 @@ export class World implements PlayerHost {
     Bg.drawBackground(g, this.level.theme, camX, this.viewW, this.t);
     for (const d of this.level.decos) {
       if (d.x + 200 < camX || d.x - 40 > camX + this.viewW) continue;
-      Props.drawDeco(g, d, camX, this.level.theme, this.t, this.player.state === 'gone');
+      Props.drawDeco(g, d, camX, this.level.theme, this.t, this.player.state === 'gone', this.pixelText);
     }
     for (const e of this.entities) if (e.activated && e.layer === 0 && !e.dead) e.draw(g, camX, this);
     const piping = this.player.state === 'pipe-in' || this.player.state === 'pipe-out';
@@ -962,7 +964,7 @@ export class World implements PlayerHost {
     for (const e of this.entities) if (e.activated && e.layer === 1 && !e.dead && !e.enemy) e.draw(g, camX, this);
     for (const e of this.entities) if (e.activated && e.layer === 1 && !e.dead && e.enemy) e.draw(g, camX, this);
     if (!piping) this.drawPlayer(g, camX);
-    this.fx.draw(g, camX, this.t);
+    this.fx.draw(g, camX, this.t, this.pixelText);
     g.restore();
     if (this.slowmo > 0) {
       g.fillStyle = 'rgba(120, 80, 220, 0.10)';

@@ -256,7 +256,7 @@ export class Copilot extends Entity {
     w.bounceOff(p, true);
   }
 
-  draw(g: CanvasRenderingContext2D, camX: number): void {
+  draw(g: CanvasRenderingContext2D, camX: number, w: World): void {
     const blink = this.hurtT > 0 && Math.floor(this.hurtT * 20) % 2 === 0;
     const img = BossArt.copilot(this.phase2, Math.floor(this.t * 10) % 2, this.state === 'stunned');
     const x = Math.round(this.cx - img.width / 2 - camX);
@@ -286,7 +286,7 @@ export class Copilot extends Entity {
         );
       }
     }
-    if (this.quipT > 0) {
+    if (this.quipT > 0 && w.pixelText) {
       const tw = measure(this.quip);
       const bx = Math.round(Math.max(this.x0 + 4 - camX, Math.min(this.x1 - 8 - tw - camX, this.cx - camX - tw / 2)));
       const by = Math.max(32, Math.round(this.y - 20));

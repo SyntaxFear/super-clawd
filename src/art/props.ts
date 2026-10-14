@@ -270,7 +270,15 @@ function prod(theme: Theme, frame: number, open: boolean): Img {
   );
 }
 
-export function drawDeco(g: CanvasRenderingContext2D, d: Deco, camX: number, theme: Theme, t: number, doorOpen: boolean): void {
+export function drawDeco(
+  g: CanvasRenderingContext2D,
+  d: Deco,
+  camX: number,
+  theme: Theme,
+  t: number,
+  doorOpen: boolean,
+  withText = true,
+): void {
   const x = Math.round(d.x - camX);
   const dark = theme !== 'terminal' && theme !== 'cloud';
   switch (d.kind) {
@@ -278,7 +286,8 @@ export function drawDeco(g: CanvasRenderingContext2D, d: Deco, camX: number, the
       g.drawImage(prod(theme, Math.floor(t * 2) % 2, doorOpen), x - 2, d.y - 4);
       break;
     case 'sign': {
-      const img = signImg(d.text ?? [], dark);
+      const lines = d.text ?? [];
+      const img = signImg(withText ? lines : lines.map((l) => ' '.repeat(l.length)), dark);
       g.drawImage(img, x, d.y + 16 - img.height);
       break;
     }

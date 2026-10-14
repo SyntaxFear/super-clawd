@@ -103,7 +103,7 @@ export class Fx {
     this.popups = this.popups.filter((p) => p.t < p.life);
   }
 
-  draw(g: CanvasRenderingContext2D, camX: number, time: number): void {
+  draw(g: CanvasRenderingContext2D, camX: number, time: number, popups = true): void {
     for (const p of this.parts) {
       const x = Math.round(p.x - camX);
       const y = Math.round(p.y);
@@ -116,6 +116,7 @@ export class Fx {
       g.fillRect(x, y, p.size, p.size);
     }
     g.globalAlpha = 1;
+    if (!popups) return;
     for (const p of this.popups) {
       const rise = Math.min(1, p.t / 0.5) * 18;
       const color = p.rainbow ? rainbow(time * 1.5) : p.color;
