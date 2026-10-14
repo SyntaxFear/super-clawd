@@ -30,6 +30,21 @@ npm run dev
 
 Open http://localhost:5180. The dev server also listens on your local network, so you can play on a phone on the same Wi-Fi.
 
+## Terminal edition
+
+The same game, played right in your terminal: pixel art drawn with half-block characters, menus and HUD in real terminal text.
+
+![Terminal edition](docs/screenshots/terminal.png)
+
+```bash
+npm install
+npm run terminal
+```
+
+- Best in a big window: 160×58 or larger shows full detail. Smaller windows still work with chunkier pixels (press Cmd − to zoom out).
+- Ghostty, kitty, WezTerm, foot and iTerm2 report key releases (kitty keyboard protocol), so the controls match the web version. Other terminals infer held keys from key repeat and run automatically.
+- No sound. Progress is saved in `~/.super-clawd/save.json`.
+
 ### Controls
 
 |                       | Keyboard          | Touch | Gamepad       |
@@ -77,16 +92,17 @@ URL flags for testing: `?level=1-3` jump to a level · `&x=80` start at tile 80 
 
 ### Project layout
 
-| Path                        | What lives there                                                       |
-| --------------------------- | ---------------------------------------------------------------------- |
-| `src/engine`                | Input (keyboard, touch, gamepad), pixel font, sprite and color helpers |
-| `src/game`                  | Physics, player, level builder, world rules, HUD, scenes               |
-| `src/game/entities`         | Enemies, items, platforms, gates and the Copilot boss                  |
-| `src/game/levels/world1.ts` | The four levels, written with a small builder API                      |
-| `src/art`                   | All pixel art, drawn procedurally                                      |
-| `src/audio`                 | WebAudio chiptune synth and soundtrack                                 |
-| `src/share`                 | Replay recorder, GIF encoder (Web Worker), share sheet                 |
-| `tests`                     | Vitest suites, including a level solver and a timing-aware route bot   |
+| Path                        | What lives there                                                             |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `src/engine`                | Input (keyboard, touch, gamepad), pixel font, sprite and color helpers       |
+| `src/game`                  | Physics, player, level builder, world rules, HUD, scenes                     |
+| `src/game/entities`         | Enemies, items, platforms, gates and the Copilot boss                        |
+| `src/game/levels/world1.ts` | The four levels, written with a small builder API                            |
+| `src/art`                   | All pixel art, drawn procedurally                                            |
+| `src/audio`                 | WebAudio chiptune synth and soundtrack                                       |
+| `src/share`                 | Replay recorder, GIF encoder (Web Worker), share sheet                       |
+| `src/terminal`              | Terminal edition: software canvas, half-block renderer, kitty keyboard input |
+| `tests`                     | Vitest suites, including a level solver and a timing-aware route bot         |
 
 Game rules never touch the DOM, so the whole simulation runs headless in tests. See [docs/DESIGN.md](docs/DESIGN.md) for the design notes and roadmap.
 
