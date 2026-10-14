@@ -10,30 +10,13 @@ import type { Recorder } from '../share/recorder';
 import { makeReplayGif, shareFile, shareText } from '../share/share';
 import type { UI } from '../ui/ui';
 import type { Gate } from './entities/props';
+import { deathLine, fmtTime, quipFor } from './flavor';
 import { drawHud } from './hud';
 import { getLevel, LEVELS, levelIndex } from './levels';
 import type { Controls } from './player';
 import { newSession, World, type Session, type WorldEvent, type WorldHooks } from './world';
 
 type Scene = 'title' | 'intro' | 'play' | 'menu';
-
-const QUIPS = [
-  "You're absolutely right! I should have jumped.",
-  'It works on my machine.',
-  'Have you tried /compact?',
-  'git blame says: you.',
-  'Let me try a different approach…',
-  'Fixed it! (it was not fixed)',
-  'Retrying with exponential backoff…',
-  'Skill issue. Temporary one.',
-  'Ship it anyway? No.',
-];
-
-function fmtTime(sec: number): string {
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 export interface GameDeps {
   g: CanvasRenderingContext2D;
@@ -354,23 +337,6 @@ export class Game {
     });
   }
 
-  private deathLine(cause: string, killer: string): string {
-    switch (cause) {
-      case 'pit':
-        return 'fell into /dev/null';
-      case 'lava':
-        return 'touched the red CI pipeline';
-      case 'time':
-        return 'request timed out';
-      case 'context':
-        return `context limit reached · last hit: ${killer || 'unknown'}`;
-      case 'rmrf':
-        return 'you approved rm -rf ~/';
-      default:
-        return `killed by ${killer || 'something'}`;
-    }
-  }
-
   private onDeath(ev: Extract<WorldEvent, { type: 'died' }>, w: World): void {
     this.recorder.freeze();
     this.session.lives -= 1;
@@ -383,11 +349,11 @@ export class Game {
     const level = w.level;
     this.lastDeath = { cause: ev.cause, killer: ev.killer, progress: ev.progress, level: level.id };
     if (ev.cause === 'rmrf') this.autoApprove = false;
-    const line = this.deathLine(ev.cause, ev.killer);
+    const line = deathLine(ev.cause, ev.killer);
     const caption = `✗ ${line} · ${level.id}`;
     this.deathGif = makeReplayGif(this.recorder, caption.length > 60 ? `✗ ${line}`.slice(0, 60) : caption).catch(() => null);
     const pct = Math.round(ev.progress * 100);
-    const quip = QUIPS[(this.session.deaths * 7 + Math.floor(this.t)) % QUIPS.length];
+    const quip = quipFor(this.session.deaths, this.t);
     if (this.session.lives <= 0) {
       this.audio.music('gameover');
       this.ui.open({
@@ -444,7 +410,7 @@ export class Game {
       return;
     }
     const d = this.lastDeath;
-    const line = this.deathLine(d.cause, d.killer);
+    const line = deathLine(d.cause, d.killer);
     const text = `💀 Super Clawd ${d.level}: ${line} at ${Math.round(d.progress * 100)}%. Can you do better? ${location.origin}${location.pathname}`;
     const r = await shareFile(blob, `super-clawd-${d.level}.gif`, text);
     this.ui.toast(

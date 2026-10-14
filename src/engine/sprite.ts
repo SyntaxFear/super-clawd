@@ -1,11 +1,22 @@
 /** Pixel-art helpers. Everything is built lazily so logic modules stay DOM-free in tests. */
 export type Img = HTMLCanvasElement;
 
-export function canvas(w: number, h: number): Img {
+type CanvasFactory = (w: number, h: number) => Img;
+
+let factory: CanvasFactory = (w, h) => {
   const c = document.createElement('canvas');
-  c.width = Math.max(1, Math.ceil(w));
-  c.height = Math.max(1, Math.ceil(h));
+  c.width = w;
+  c.height = h;
   return c;
+};
+
+/** Swap the canvas implementation (the terminal edition renders without a DOM). */
+export function setCanvasFactory(f: CanvasFactory): void {
+  factory = f;
+}
+
+export function canvas(w: number, h: number): Img {
+  return factory(Math.max(1, Math.ceil(w)), Math.max(1, Math.ceil(h)));
 }
 
 export function ctx2d(c: Img): CanvasRenderingContext2D {
