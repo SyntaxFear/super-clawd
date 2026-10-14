@@ -27,10 +27,15 @@
   "engines": {
     "node": ">=20"
   },
+  "bin": {
+    "super-clawd": "bin/super-clawd.mjs"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "build:terminal": "vite build --config vite.terminal.config.ts",
+    "terminal": "npm run build:terminal --silent && node bin/super-clawd.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
@@ -38,6 +43,7 @@
     "icons": "node scripts/make-icons.mjs"
   },
   "devDependencies": {
+    "@types/node": "^22.20.5",
     "prettier": "^3.9.10",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
