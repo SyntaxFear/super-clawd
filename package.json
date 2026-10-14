@@ -1,6 +1,6 @@
 {
   "name": "super-clawd",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A retro platformer starring Clawd, the Claude Code mascot. Fix bugs, collect tokens, beat Copilot.",
   "private": true,
   "type": "module",
