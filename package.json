@@ -1,8 +1,32 @@
 {
   "name": "super-clawd",
   "version": "0.0.0",
+  "description": "A retro platformer starring Clawd, the Claude Code mascot. Fix bugs, collect tokens, beat Copilot.",
   "private": true,
   "type": "module",
+  "license": "MIT",
+  "author": "Levan Parastashvili (https://github.com/SyntaxFear)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SyntaxFear/super-clawd.git"
+  },
+  "homepage": "https://github.com/SyntaxFear/super-clawd#readme",
+  "bugs": {
+    "url": "https://github.com/SyntaxFear/super-clawd/issues"
+  },
+  "keywords": [
+    "game",
+    "platformer",
+    "pixel-art",
+    "retro",
+    "claude-code",
+    "typescript",
+    "canvas",
+    "chiptune"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
