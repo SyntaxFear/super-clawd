@@ -85,9 +85,9 @@ describe('half-block screen', () => {
     expect(buf.bg[0]).toBe(0xff0000);
     const lower = new CellBuffer(1, 1);
     framesToCells(c, 2, 0, lower, 0, 0, 1, 1);
-    expect(lower.ch[0]).toBe('▀');
-    expect(lower.fg[0]).toBe(0xff0000);
-    expect(lower.bg[0]).toBe(0x0000ff);
+    expect(lower.ch[0]).toBe('▄');
+    expect(lower.fg[0]).toBe(0x0000ff);
+    expect(lower.bg[0]).toBe(0xff0000);
   });
 
   it('only redraws cells that changed', () => {
@@ -182,7 +182,7 @@ describe('terminal app', () => {
     const text = buf.ch.slice(0, buf.cols).join('');
     expect(text).toContain('Clawd');
     expect(text).toContain('Hello, World');
-    expect(buf.ch.filter((c) => c === '▀').length).toBeGreaterThan(500);
+    expect(buf.ch.filter((c) => c === '▄').length).toBeGreaterThan(500);
   });
 
   it('opens the permission prompt as a terminal panel', () => {

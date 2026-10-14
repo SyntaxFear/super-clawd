@@ -84,8 +84,10 @@ function sample(
 }
 
 /**
- * Paint a frame into the cell buffer with upper-half-block characters: each cell shows two
- * vertically stacked "pixels", each one s×s game pixels.
+ * Paint a frame into the cell buffer with half-block characters: each cell shows two vertically
+ * stacked "pixels", each one s×s game pixels. Lower half blocks, because terminals that draw the
+ * block from the font (Apple's Terminal) leave a gap above the glyph: with ▄ that gap shows the
+ * top pixel's own color, with ▀ it would show the bottom one as a stripe.
  */
 export function framesToCells(
   frame: SoftCanvas,
@@ -115,9 +117,9 @@ export function framesToCells(
         out.fg[i] = -1;
         out.bg[i] = t;
       } else {
-        out.ch[i] = '▀';
-        out.fg[i] = t;
-        out.bg[i] = b;
+        out.ch[i] = '▄';
+        out.fg[i] = b;
+        out.bg[i] = t;
       }
     }
   }
